@@ -24,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _listingService = ListingService();
   List<Listing> _recent = [];
   List<Listing> _artisans = [];
+  List<Listing> _recommended = [];
   bool _loading = true;
   String? _error;
 
@@ -54,6 +55,15 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() => _error = e.toString());
     } finally {
       setState(() => _loading = false);
+    }
+    // Séparé du chargement principal : une erreur ici (ex. utilisateur non
+    // connecté, aucun favori) ne doit pas casser le reste de la page — la
+    // section est simplement masquée si la liste reste vide.
+    try {
+      final recommended = await _listingService.recommended();
+      if (mounted) setState(() => _recommended = recommended);
+    } catch (_) {
+      // silencieux — section optionnelle
     }
   }
 
@@ -107,6 +117,16 @@ class _HomeScreenState extends State<HomeScreen> {
           // annonces — sinon la ligne de catégories reste vide (ni contenu
           // ni skeleton) tant que les annonces n'ont pas fini de charger.
           SliverToBoxAdapter(child: _CategoriesSection(categories: categories.categories, loading: categories.loading)),
+          if (_recommended.isNotEmpty) ...[
+            SliverToBoxAdapter(
+              child: _SectionHeader(
+                title: '✨ Recommandé pour vous',
+                subtitle: "D'après vos favoris",
+                onSeeAll: null,
+              ),
+            ),
+            _ListingsGridSliver(listings: _recommended),
+          ],
           if (_loading)
             const SliverPadding(
               padding: EdgeInsets.all(16),
@@ -115,7 +135,13 @@ class _HomeScreenState extends State<HomeScreen> {
           else if (_error != null)
             SliverFillRemaining(child: ErrorView(message: _error!, onRetry: _load))
           else ...[
-            SliverToBoxAdapter(child: _SectionHeader(title: 'Annonces récentes', onSeeAll: () => context.push('/listings'))),
+            SliverToBoxAdapter(
+              child: _SectionHeader(
+                title: 'Annonces à la une',
+                subtitle: 'Les plus pertinentes en ce moment',
+                onSeeAll: () => context.push('/listings'),
+              ),
+            ),
             _ListingsGridSliver(listings: _recent),
             if (_artisans.isNotEmpty) ...[
               SliverToBoxAdapter(child: _SectionHeader(title: 'Artisans & Services', onSeeAll: () => context.push('/listings'))),
@@ -225,8 +251,9 @@ class _CategoryTile extends StatelessWidget {
 
 class _SectionHeader extends StatelessWidget {
   final String title;
-  final VoidCallback onSeeAll;
-  const _SectionHeader({required this.title, required this.onSeeAll});
+  final String? subtitle;
+  final VoidCallback? onSeeAll;
+  const _SectionHeader({required this.title, this.subtitle, this.onSeeAll});
 
   @override
   Widget build(BuildContext context) {
@@ -235,8 +262,20 @@ class _SectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.ink)),
-          TextButton(onPressed: onSeeAll, child: const Text('Voir tout')),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                if (subtitle != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(subtitle!, style: const TextStyle(fontSize: 12, color: AppColors.inkMuted)),
+                  ),
+              ],
+            ),
+          ),
+          if (onSeeAll != null) TextButton(onPressed: onSeeAll, child: const Text('Voir tout')),
         ],
       ),
     );

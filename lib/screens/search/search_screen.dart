@@ -8,6 +8,7 @@ import '../../models/listing.dart';
 import '../../services/listing_service.dart';
 import '../../widgets/listing_card.dart';
 import '../../widgets/skeleton.dart';
+import '../../widgets/sort_menu.dart';
 import '../../widgets/state_views.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -33,6 +34,7 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _loading = false;
   String? _error;
   String _query = '';
+  String _sort = 'hot';
 
   @override
   void initState() {
@@ -86,7 +88,7 @@ class _SearchScreenState extends State<SearchScreen> {
       _error = null;
     });
     try {
-      final res = await _service.search(query: {'title_cont': query});
+      final res = await _service.search(query: {'title_cont': query}, sort: _sort);
       setState(() {
         _results = res.listings;
         _meta = res.meta;
@@ -96,6 +98,11 @@ class _SearchScreenState extends State<SearchScreen> {
     } finally {
       setState(() => _loading = false);
     }
+  }
+
+  void _onSortChanged(String sort) {
+    setState(() => _sort = sort);
+    if (_searched) _runSearch(_query);
   }
 
   @override
@@ -133,7 +140,13 @@ class _SearchScreenState extends State<SearchScreen> {
           else if (_error != null)
             ErrorView(message: _error!, onRetry: () => _runSearch(_query))
           else if (_searched)
-            _ResultsList(results: _results, meta: _meta, query: _query)
+            _ResultsList(
+              results: _results,
+              meta: _meta,
+              query: _query,
+              sort: _sort,
+              onSortChanged: _onSortChanged,
+            )
           else
             const EmptyView(message: 'Recherchez une annonce par mot-clé', emoji: '🔎'),
 
@@ -264,7 +277,15 @@ class _ResultsList extends StatelessWidget {
   final List<Listing> results;
   final PaginationMeta? meta;
   final String query;
-  const _ResultsList({required this.results, required this.meta, required this.query});
+  final String sort;
+  final ValueChanged<String> onSortChanged;
+  const _ResultsList({
+    required this.results,
+    required this.meta,
+    required this.query,
+    required this.sort,
+    required this.onSortChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -275,20 +296,24 @@ class _ResultsList extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text.rich(
-              TextSpan(
-                style: const TextStyle(fontSize: 13, color: AppColors.inkMuted),
-                children: [
+          child: Row(
+            children: [
+              Expanded(
+                child: Text.rich(
                   TextSpan(
-                    text: '${meta?.total ?? results.length}',
-                    style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.ink, fontSize: 14),
+                    style: const TextStyle(fontSize: 13, color: AppColors.inkMuted),
+                    children: [
+                      TextSpan(
+                        text: '${meta?.total ?? results.length}',
+                        style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.ink, fontSize: 14),
+                      ),
+                      const TextSpan(text: ' résultat(s)'),
+                    ],
                   ),
-                  const TextSpan(text: ' résultat(s)'),
-                ],
+                ),
               ),
-            ),
+              SortMenuButton(value: sort, onChanged: onSortChanged),
+            ],
           ),
         ),
         Expanded(

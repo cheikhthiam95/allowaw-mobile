@@ -18,20 +18,25 @@ class SuggestionsResult {
 class ListingService {
   final _api = ApiClient.instance;
 
-  Future<ListingResult> index({int page = 1, Map<String, dynamic>? filters}) async {
-    final res = await _api.get('/listings', query: {'page': page, ...?filters});
+  Future<ListingResult> index({int page = 1, String sort = 'hot', Map<String, dynamic>? filters}) async {
+    final res = await _api.get('/listings', query: {'page': page, 'sort': sort, ...?filters});
     return ListingResult(
       listings: (res['listings'] as List).map((e) => Listing.fromJson(e as Map<String, dynamic>)).toList(),
       meta: PaginationMeta.fromJson(res['meta'] as Map<String, dynamic>),
     );
   }
 
-  Future<ListingResult> search({int page = 1, required Map<String, dynamic> query}) async {
-    final res = await _api.get('/listings/search', query: {'page': page, 'q': query});
+  Future<ListingResult> search({int page = 1, String sort = 'hot', required Map<String, dynamic> query}) async {
+    final res = await _api.get('/listings/search', query: {'page': page, 'sort': sort, 'q': query});
     return ListingResult(
       listings: (res['listings'] as List).map((e) => Listing.fromJson(e as Map<String, dynamic>)).toList(),
       meta: PaginationMeta.fromJson(res['meta'] as Map<String, dynamic>),
     );
+  }
+
+  Future<List<Listing>> recommended() async {
+    final res = await _api.get('/listings/recommended');
+    return (res['listings'] as List).map((e) => Listing.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   /// L'API renvoie l'annonce ET les annonces similaires en un seul appel —

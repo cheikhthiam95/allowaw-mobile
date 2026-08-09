@@ -7,6 +7,7 @@ import '../../models/listing.dart';
 import '../../services/category_service.dart';
 import '../../widgets/listing_card.dart';
 import '../../widgets/skeleton.dart';
+import '../../widgets/sort_menu.dart';
 import '../../widgets/state_views.dart';
 
 /// Équivalent de Categories/Show.jsx — en-tête catégorie, chips de
@@ -27,6 +28,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
   String? _activeSubcategorySlug;
   bool _loading = true;
   String? _error;
+  String _sort = 'hot';
 
   @override
   void initState() {
@@ -40,7 +42,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
       _error = null;
     });
     try {
-      final res = await _service.show(widget.slug, subcategory: subcategory);
+      final res = await _service.show(widget.slug, subcategory: subcategory, sort: _sort);
       setState(() {
         _category = res.category;
         _listings = res.listings;
@@ -53,10 +55,23 @@ class _CategoryScreenState extends State<CategoryScreen> {
     }
   }
 
+  void _onSortChanged(String sort) {
+    setState(() => _sort = sort);
+    _load(subcategory: _activeSubcategorySlug);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_category?.name ?? 'Catégorie')),
+      appBar: AppBar(
+        title: Text(_category?.name ?? 'Catégorie'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Center(child: SortMenuButton(value: _sort, onChanged: _onSortChanged)),
+          ),
+        ],
+      ),
       body: _loading
           ? const SkeletonListingGrid()
           : _error != null

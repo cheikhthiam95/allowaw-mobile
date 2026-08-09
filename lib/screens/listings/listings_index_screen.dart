@@ -6,6 +6,7 @@ import '../../models/listing.dart';
 import '../../services/listing_service.dart';
 import '../../widgets/listing_card.dart';
 import '../../widgets/skeleton.dart';
+import '../../widgets/sort_menu.dart';
 import '../../widgets/state_views.dart';
 
 /// Équivalent de Listings/Index.jsx — toutes les annonces, paginées.
@@ -26,6 +27,7 @@ class _ListingsIndexScreenState extends State<ListingsIndexScreen> {
   bool _loading = true;
   bool _loadingMore = false;
   String? _error;
+  String _sort = 'hot';
 
   @override
   void initState() {
@@ -51,7 +53,7 @@ class _ListingsIndexScreenState extends State<ListingsIndexScreen> {
       _page = 1;
     });
     try {
-      final res = await _service.index(page: 1);
+      final res = await _service.index(page: 1, sort: _sort);
       setState(() {
         _listings
           ..clear()
@@ -65,11 +67,16 @@ class _ListingsIndexScreenState extends State<ListingsIndexScreen> {
     }
   }
 
+  void _onSortChanged(String sort) {
+    setState(() => _sort = sort);
+    _load();
+  }
+
   Future<void> _loadMore() async {
     if (_loadingMore || _meta == null || !_meta!.hasMore) return;
     setState(() => _loadingMore = true);
     try {
-      final res = await _service.index(page: _page + 1);
+      final res = await _service.index(page: _page + 1, sort: _sort);
       setState(() {
         _page += 1;
         _listings.addAll(res.listings);
@@ -85,7 +92,15 @@ class _ListingsIndexScreenState extends State<ListingsIndexScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Toutes les annonces')),
+      appBar: AppBar(
+        title: const Text('Toutes les annonces'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Center(child: SortMenuButton(value: _sort, onChanged: _onSortChanged)),
+          ),
+        ],
+      ),
       body: _loading
           ? const SkeletonListingGrid()
           : _error != null

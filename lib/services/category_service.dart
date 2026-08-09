@@ -18,10 +18,11 @@ class CategoryService {
     return (res['categories'] as List).map((e) => Category.fromJson(e as Map<String, dynamic>)).toList();
   }
 
-  Future<CategoryShowResult> show(String slug, {String? subcategory, int page = 1}) async {
+  Future<CategoryShowResult> show(String slug, {String? subcategory, int page = 1, String sort = 'hot'}) async {
     final res = await _api.get('/categories/$slug', query: {
       if (subcategory != null) 'subcategory': subcategory,
       'page': page,
+      'sort': sort,
     });
     return CategoryShowResult(
       category: Category.fromJson(res['category'] as Map<String, dynamic>),
