@@ -14,6 +14,7 @@ import '../../services/listing_service.dart';
 import '../../widgets/listing_card.dart';
 import '../../widgets/skeleton.dart';
 import '../../widgets/state_views.dart';
+import '../../widgets/verification_badge.dart';
 
 class ListingDetailScreen extends StatefulWidget {
   final String slug;
@@ -289,14 +290,18 @@ class _SellerCard extends StatelessWidget {
       decoration: BoxDecoration(color: AppColors.canvas, borderRadius: BorderRadius.circular(14)),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: AppColors.primary100,
-            backgroundImage: listing.user.avatarUrl != null ? NetworkImage(listing.user.avatarUrl!) : null,
-            child: listing.user.avatarUrl == null
-                ? Text(listing.user.fullName.isNotEmpty ? listing.user.fullName[0].toUpperCase() : '?',
-                    style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700))
-                : null,
+          AvatarWithVerificationBadge(
+            verified: listing.user.verified,
+            badgeSize: 16,
+            avatar: CircleAvatar(
+              radius: 22,
+              backgroundColor: AppColors.primary100,
+              backgroundImage: listing.user.avatarUrl != null ? NetworkImage(listing.user.avatarUrl!) : null,
+              child: listing.user.avatarUrl == null
+                  ? Text(listing.user.fullName.isNotEmpty ? listing.user.fullName[0].toUpperCase() : '?',
+                      style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700))
+                  : null,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -304,7 +309,21 @@ class _SellerCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(listing.user.fullName, style: const TextStyle(fontWeight: FontWeight.w700)),
-                const Text('Vendeur', style: TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+                if (listing.user.ratingsCount > 0)
+                  Row(
+                    children: [
+                      const Icon(Icons.star, size: 12, color: AppColors.gold),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${listing.user.avgRating?.toStringAsFixed(1)}'
+                        '${listing.user.completionRate != null ? " · ${listing.user.completionRate}% concluent" : ""}'
+                        ' (${listing.user.ratingsCount})',
+                        style: const TextStyle(color: AppColors.inkMuted, fontSize: 11.5),
+                      ),
+                    ],
+                  )
+                else
+                  const Text('Vendeur', style: TextStyle(color: AppColors.inkMuted, fontSize: 12)),
               ],
             ),
           ),

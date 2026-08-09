@@ -57,8 +57,22 @@ class ListingOwner {
   final String? phone;
   final String? whatsapp;
   final String? avatarUrl;
+  final bool verified;
+  final int ratingsCount;
+  final int? completionRate;
+  final double? avgRating;
 
-  ListingOwner({required this.id, required this.fullName, this.phone, this.whatsapp, this.avatarUrl});
+  ListingOwner({
+    required this.id,
+    required this.fullName,
+    this.phone,
+    this.whatsapp,
+    this.avatarUrl,
+    this.verified = false,
+    this.ratingsCount = 0,
+    this.completionRate,
+    this.avgRating,
+  });
 
   factory ListingOwner.fromJson(Map<String, dynamic> json) => ListingOwner(
         id: json['id'] as int,
@@ -66,5 +80,9 @@ class ListingOwner {
         phone: json['phone'] as String?,
         whatsapp: json['whatsapp'] as String?,
         avatarUrl: json['avatarUrl'] as String?,
+        verified: json['verified'] as bool? ?? false,
+        ratingsCount: json['ratingsCount'] as int? ?? 0,
+        completionRate: json['completionRate'] as int?,
+        avgRating: (json['avgRating'] as num?)?.toDouble(),
       );
 }

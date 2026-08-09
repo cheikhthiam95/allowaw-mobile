@@ -19,6 +19,10 @@ class ConversationDetailScreen extends StatefulWidget {
   State<ConversationDetailScreen> createState() => _ConversationDetailScreenState();
 }
 
+// Même délai que côté web (Messages/Show.jsx) — le temps qu'un vrai
+// échange ait pu avoir lieu avant de demander "avez-vous conclu ?".
+const _ratingPromptDelay = Duration(hours: 24);
+
 class _ConversationDetailScreenState extends State<ConversationDetailScreen> {
   final _service = ConversationService();
   final _bodyController = TextEditingController();
@@ -29,6 +33,10 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen> {
   bool _loading = true;
   bool _sending = false;
   String? _error;
+
+  bool? _pendingConcluded;
+  int _pendingStars = 0;
+  bool _submittingRating = false;
 
   @override
   void initState() {
@@ -95,6 +103,121 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen> {
     }
   }
 
+  Future<void> _submitRating() async {
+    if (_pendingConcluded == null || _submittingRating) return;
+    setState(() => _submittingRating = true);
+    try {
+      await _service.rateContact(
+        conversationId: widget.conversationId,
+        concluded: _pendingConcluded!,
+        stars: _pendingStars > 0 ? _pendingStars : null,
+      );
+      await _load();
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      if (mounted) setState(() => _submittingRating = false);
+    }
+  }
+
+  /// "Avez-vous conclu ?" — uniquement pour l'acheteur (auteur du premier
+  /// contact), une fois le délai passé, et tant qu'il n'a pas déjà répondu.
+  /// C'est le signal de confiance central de la plateforme (voir
+  /// ContactRating côté Rails) : pas de paiement/escrow à observer, donc
+  /// c'est la seule preuve qu'une mise en relation a fonctionné.
+  Widget _buildRatingBanner(Conversation conv) {
+    if (conv.rating != null) {
+      return Container(
+        width: double.infinity,
+        color: AppColors.primary50,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            const Icon(Icons.check_circle, size: 16, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Merci pour votre retour — ${conv.rating!.concluded ? "transaction conclue" : "non conclue"}'
+                '${conv.rating!.stars != null ? " · ${conv.rating!.stars}★" : ""}',
+                style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final createdAt = conv.createdAt;
+    if (!conv.isRater || createdAt == null || DateTime.now().difference(createdAt) < _ratingPromptDelay) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      color: AppColors.goldLight.withValues(alpha: 0.18),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Avez-vous conclu avec ${conv.otherUser.fullName} ?',
+            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.ink),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _RatingChoiceButton(
+                label: 'Oui, conclu',
+                selected: _pendingConcluded == true,
+                selectedColor: AppColors.primary,
+                onTap: () => setState(() => _pendingConcluded = true),
+              ),
+              const SizedBox(width: 8),
+              _RatingChoiceButton(
+                label: 'Non',
+                selected: _pendingConcluded == false,
+                selectedColor: AppColors.inkMuted,
+                onTap: () => setState(() => _pendingConcluded = false),
+              ),
+              if (_pendingConcluded != null) ...[
+                const SizedBox(width: 10),
+                ...List.generate(5, (i) {
+                  final n = i + 1;
+                  return GestureDetector(
+                    onTap: () => setState(() => _pendingStars = n),
+                    child: Icon(
+                      Icons.star,
+                      size: 18,
+                      color: n <= _pendingStars ? AppColors.gold : AppColors.line,
+                    ),
+                  );
+                }),
+              ],
+            ],
+          ),
+          if (_pendingConcluded != null) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 32,
+              child: ElevatedButton(
+                onPressed: _submittingRating ? null : _submitRating,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: _submittingRating
+                    ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Text('Envoyer mon avis', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Scaffold(body: _ChatSkeleton());
@@ -118,6 +241,7 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen> {
       ),
       body: Column(
         children: [
+          _buildRatingBanner(conv),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -190,6 +314,33 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _RatingChoiceButton extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final Color selectedColor;
+  final VoidCallback onTap;
+  const _RatingChoiceButton({required this.label, required this.selected, required this.selectedColor, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? selectedColor : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: selected ? selectedColor : AppColors.line),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: selected ? Colors.white : AppColors.ink),
+        ),
       ),
     );
   }

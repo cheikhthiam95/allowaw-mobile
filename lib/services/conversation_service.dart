@@ -38,4 +38,13 @@ class ConversationService {
     final res = await _api.post('/conversations/$conversationId/messages', data: {'body': body});
     return ChatMessage.fromJson(res['message'] as Map<String, dynamic>);
   }
+
+  /// Notation post-contact — seul l'acheteur (auteur du premier message)
+  /// peut noter, voir ContactRating côté Rails.
+  Future<void> rateContact({required int conversationId, required bool concluded, int? stars}) async {
+    await _api.post('/conversations/$conversationId/rating', data: {
+      'concluded': concluded,
+      if (stars != null) 'stars': stars,
+    });
+  }
 }
