@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/verification_badge.dart';
 
 /// Équivalent de Account/Dashboard.jsx — raccourcis vers les sous-sections
 /// du compte. Affiche un écran de connexion si non-authentifié (le web
@@ -29,14 +30,17 @@ class AccountDashboardScreen extends StatelessWidget {
             decoration: BoxDecoration(color: AppColors.primary50, borderRadius: BorderRadius.circular(16)),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 28,
-                  backgroundColor: AppColors.primary100,
-                  backgroundImage: user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
-                  child: user.avatarUrl == null
-                      ? Text(user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?',
-                          style: const TextStyle(fontSize: 20, color: AppColors.primary, fontWeight: FontWeight.w700))
-                      : null,
+                AvatarWithVerificationBadge(
+                  verified: user.verified,
+                  avatar: CircleAvatar(
+                    radius: 28,
+                    backgroundColor: AppColors.primary100,
+                    backgroundImage: user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
+                    child: user.avatarUrl == null
+                        ? Text(user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?',
+                            style: const TextStyle(fontSize: 20, color: AppColors.primary, fontWeight: FontWeight.w700))
+                        : null,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(

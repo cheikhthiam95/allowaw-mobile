@@ -24,7 +24,7 @@ class AllowawApp extends StatefulWidget {
   State<AllowawApp> createState() => _AllowawAppState();
 }
 
-class _AllowawAppState extends State<AllowawApp> {
+class _AllowawAppState extends State<AllowawApp> with WidgetsBindingObserver {
   late final AuthProvider _auth;
   late final FavoritesProvider _favorites;
   late final MessagesProvider _messages;
@@ -33,6 +33,7 @@ class _AllowawAppState extends State<AllowawApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _auth = AuthProvider();
     _favorites = FavoritesProvider();
     _messages = MessagesProvider();
@@ -63,7 +64,22 @@ class _AllowawAppState extends State<AllowawApp> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Le système suspend souvent la socket en arrière-plan — on la
+    // referme proprement puis la rouvre au retour au premier plan
+    // (le poll de secours aurait sinon rattrapé le retard, mais jusqu'à
+    // 60s de latence n'a pas sa place pour "instantané").
+    if (!_auth.isAuthenticated) return;
+    if (state == AppLifecycleState.resumed) {
+      _messages.startPolling();
+    } else if (state == AppLifecycleState.paused) {
+      _messages.stopPolling();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _auth.removeListener(_onAuthChanged);
     super.dispose();
   }

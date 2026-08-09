@@ -7,6 +7,7 @@ import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/profile_service.dart';
 import '../../widgets/phone_verification_card.dart';
+import '../../widgets/verification_badge.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -113,6 +114,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         right: 0,
                         child: CircleAvatar(radius: 14, backgroundColor: AppColors.gold, child: Icon(Icons.camera_alt, size: 14, color: AppColors.ink)),
                       ),
+                      if (!user.verified)
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          child: VerificationBadge(verified: user.verified, size: 24),
+                        ),
                     ],
                   ),
                 ),

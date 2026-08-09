@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
+import '../providers/auth_provider.dart';
 import '../providers/messages_provider.dart';
 
 /// Coquille avec navigation basse — enveloppe Home / Recherche / Messages /
@@ -22,6 +23,7 @@ class AppShell extends StatelessWidget {
     final location = GoRouterState.of(context).matchedLocation;
     final index = _indexFor(location);
     final unread = context.watch<MessagesProvider>().unreadCount;
+    final unverified = context.watch<AuthProvider>().currentUser?.verified == false;
 
     return Scaffold(
       body: child,
@@ -49,7 +51,14 @@ class AppShell extends StatelessWidget {
               onTap: () => context.go('/messages'),
               badgeCount: unread,
             ),
-            _NavItem(icon: Icons.person_outline, activeIcon: Icons.person, label: 'Compte', selected: index == 3, onTap: () => context.go('/account')),
+            _NavItem(
+              icon: Icons.person_outline,
+              activeIcon: Icons.person,
+              label: 'Compte',
+              selected: index == 3,
+              onTap: () => context.go('/account'),
+              showDot: unverified,
+            ),
           ],
         ),
       ),
@@ -64,6 +73,7 @@ class _NavItem extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
   final int badgeCount;
+  final bool showDot;
 
   const _NavItem({
     required this.icon,
@@ -72,6 +82,7 @@ class _NavItem extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.badgeCount = 0,
+    this.showDot = false,
   });
 
   @override
@@ -101,6 +112,16 @@ class _NavItem extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.w800),
                       ),
+                    ),
+                  ),
+                if (showDot)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      width: 9,
+                      height: 9,
+                      decoration: BoxDecoration(color: AppColors.gold, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 1.5)),
                     ),
                   ),
               ],

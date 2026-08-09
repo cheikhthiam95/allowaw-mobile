@@ -54,6 +54,8 @@ dependencies:
   # Notifications locales (badge + alerte "nouveau message" quand l'app est
   # ouverte) — le vrai push (app fermée) nécessitera Firebase, en attente.
   flutter_local_notifications: ^18.0.1
+  # Client WebSocket bas niveau pour la connexion ActionCable temps réel
+  web_socket_channel: ^3.0.1
 
 dev_dependencies:
   flutter_test:

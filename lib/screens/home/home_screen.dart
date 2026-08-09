@@ -102,6 +102,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+          // Les catégories ont leur propre skeleton et leur propre état de
+          // chargement (CategoriesProvider), indépendant de celui des
+          // annonces — sinon la ligne de catégories reste vide (ni contenu
+          // ni skeleton) tant que les annonces n'ont pas fini de charger.
+          SliverToBoxAdapter(child: _CategoriesSection(categories: categories.categories, loading: categories.loading)),
           if (_loading)
             const SliverPadding(
               padding: EdgeInsets.all(16),
@@ -110,7 +115,6 @@ class _HomeScreenState extends State<HomeScreen> {
           else if (_error != null)
             SliverFillRemaining(child: ErrorView(message: _error!, onRetry: _load))
           else ...[
-            SliverToBoxAdapter(child: _CategoriesSection(categories: categories.categories)),
             SliverToBoxAdapter(child: _SectionHeader(title: 'Annonces récentes', onSeeAll: () => context.push('/listings'))),
             _ListingsGridSliver(listings: _recent),
             if (_artisans.isNotEmpty) ...[
@@ -150,11 +154,12 @@ class _SearchBarStub extends StatelessWidget {
 
 class _CategoriesSection extends StatelessWidget {
   final List<Category> categories;
-  const _CategoriesSection({required this.categories});
+  final bool loading;
+  const _CategoriesSection({required this.categories, required this.loading});
 
   @override
   Widget build(BuildContext context) {
-    if (categories.isEmpty) return const SizedBox.shrink();
+    if (categories.isEmpty && !loading) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
       child: GridView.count(
@@ -164,8 +169,25 @@ class _CategoriesSection extends StatelessWidget {
         mainAxisSpacing: 12,
         crossAxisSpacing: 10,
         childAspectRatio: 0.85,
-        children: categories.map((c) => _CategoryTile(category: c)).toList(),
+        children: loading
+            ? List.generate(8, (i) => const _CategoryTileSkeleton())
+            : categories.map((c) => _CategoryTile(category: c)).toList(),
       ),
+    );
+  }
+}
+
+class _CategoryTileSkeleton extends StatelessWidget {
+  const _CategoryTileSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        SkeletonBox(width: 52, height: 52, borderRadius: BorderRadius.all(Radius.circular(26))),
+        SizedBox(height: 8),
+        SkeletonBox(width: 40, height: 9),
+      ],
     );
   }
 }
