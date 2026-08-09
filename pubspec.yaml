@@ -63,6 +63,22 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
 
+  # Génère les icônes natives (Android/iOS) à partir d'assets/icon/icon.png
+  # — voir la config flutter_launcher_icons ci-dessous, exécuter avec :
+  #   dart run flutter_launcher_icons
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+  # Fond doré (--color-gold du site web) derrière l'icône adaptative Android —
+  # évite un carré blanc disgracieux quand le launcher applique son propre
+  # masque (cercle, squircle...) autour du rond doré déjà présent dans l'image.
+  adaptive_icon_background: "#D4A017"
+  adaptive_icon_foreground: "assets/icon/icon.png"
+  remove_alpha_ios: true
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
