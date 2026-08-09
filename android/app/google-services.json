@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "47103197728",
+    "project_id": "allowaw-82a91",
+    "storage_bucket": "allowaw-82a91.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:47103197728:android:a94ec8c4335e52cca5b245",
+        "android_client_info": {
+          "package_name": "sn.allowaw.allowaw_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMdHw8Lujs66VFwN5VZirJ7LwiFL2R25k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

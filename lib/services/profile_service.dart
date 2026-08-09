@@ -34,4 +34,11 @@ class ProfileService {
       'password_confirmation': passwordConfirmation,
     });
   }
+
+  /// Enregistre/rafraîchit le jeton FCM de l'appareil pour les
+  /// notifications push (app fermée/arrière-plan) — voir PushNotifier
+  /// côté Rails. Passer null efface le jeton (déconnexion).
+  Future<void> updatePushToken(String? fcmToken) {
+    return _api.patch('/profile/push_token', data: {'fcm_token': fcmToken});
+  }
 }

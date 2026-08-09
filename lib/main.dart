@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
 import 'core/local_notifications.dart';
+import 'core/push_notifications.dart';
 import 'core/router.dart';
 import 'core/theme.dart';
 import 'providers/auth_provider.dart';
@@ -51,15 +52,25 @@ class _AllowawAppState extends State<AllowawApp> with WidgetsBindingObserver {
         if (id != null) _router.push('/messages/$id');
       },
     );
+    PushNotifications.init(
+      onOpenConversation: (id) => _router.push('/messages/$id'),
+    ).then((_) {
+      // Si l'app démarre déjà connectée (jeton stocké), enregistrer le
+      // jeton de l'appareil maintenant — sinon _onAuthChanged() s'en
+      // charge au moment de la connexion.
+      if (_auth.isAuthenticated) PushNotifications.registerTokenAfterLogin();
+    });
   }
 
   void _onAuthChanged() {
     if (_auth.isAuthenticated) {
       _favorites.load();
       _messages.startPolling();
+      PushNotifications.registerTokenAfterLogin();
     } else {
       _favorites.reset();
       _messages.stopPolling();
+      PushNotifications.unregisterToken();
     }
   }
 

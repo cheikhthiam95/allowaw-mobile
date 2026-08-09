@@ -51,11 +51,15 @@ dependencies:
   intl: ^0.19.0
   # Liens tel:/whatsapp:/mailto:
   url_launcher: ^6.3.1
-  # Notifications locales (badge + alerte "nouveau message" quand l'app est
-  # ouverte) — le vrai push (app fermée) nécessitera Firebase, en attente.
+  # Notifications locales — affiche la notification système quand un push
+  # FCM arrive alors que l'app est au premier plan (FCM ne le fait pas
+  # automatiquement sur Android dans ce cas).
   flutter_local_notifications: ^18.0.1
   # Client WebSocket bas niveau pour la connexion ActionCable temps réel
   web_socket_channel: ^3.0.1
+  # Notifications push (app fermée/arrière-plan) — voir PushNotifier côté Rails
+  firebase_core: ^3.8.0
+  firebase_messaging: ^15.1.6
 
 dev_dependencies:
   flutter_test:
