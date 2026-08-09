@@ -15,14 +15,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    // Syntaxe kotlinOptions (plutôt que le bloc top-level `kotlin { compilerOptions
-    // { ... } }`, plus récent) — compatible avec une bien plus large plage de
-    // versions du plugin Kotlin Gradle, et ne dépend pas de l'ordre exact
-    // d'application des plugins dans ce module.
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "sn.allowaw.allowaw_mobile"
@@ -40,6 +32,16 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
+    }
+}
+
+// AGP 9.0 a rendu `android { kotlinOptions { ... } }` obsolète au point d'être
+// une erreur bloquante — cette API top-level `compilerOptions` est la
+// remplaçante officielle. Elle nécessite que le plugin Kotlin soit
+// explicitement appliqué ci-dessus (plugins{}) pour être résolue.
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
