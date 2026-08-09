@@ -43,7 +43,7 @@ class ListingCardWidget extends StatelessWidget {
                           imageUrl: listing.thumbnail!,
                           fit: BoxFit.cover,
                           placeholder: (c, _) => Container(color: AppColors.primary50),
-                          errorWidget: (c, _, _) => Container(
+                          errorWidget: (c, _, __) => Container(
                             color: AppColors.primary50,
                             child: const Icon(Icons.image_not_supported_outlined, color: AppColors.inkMuted),
                           ),

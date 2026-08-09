@@ -198,7 +198,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: _similar.length,
-                        separatorBuilder: (_, _) => const SizedBox(width: 12),
+                        separatorBuilder: (_, __) => const SizedBox(width: 12),
                         itemBuilder: (context, i) => SizedBox(
                           width: 150,
                           child: ListingCardWidget(

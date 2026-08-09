@@ -68,7 +68,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                       onRefresh: _load,
                       child: ListView.separated(
                         itemCount: _conversations.length,
-                        separatorBuilder: (_, _) => const Divider(height: 1),
+                        separatorBuilder: (_, __) => const Divider(height: 1),
                         itemBuilder: (context, i) {
                           final c = _conversations[i];
                           return ListTile(
