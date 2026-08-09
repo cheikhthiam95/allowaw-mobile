@@ -12,6 +12,7 @@ import '../../providers/favorites_provider.dart';
 import '../../services/conversation_service.dart';
 import '../../services/listing_service.dart';
 import '../../widgets/listing_card.dart';
+import '../../widgets/skeleton.dart';
 import '../../widgets/state_views.dart';
 
 class ListingDetailScreen extends StatefulWidget {
@@ -87,7 +88,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Scaffold(body: LoadingView());
+    if (_loading) return const Scaffold(body: SkeletonListingDetail());
     if (_error != null) return Scaffold(appBar: AppBar(), body: ErrorView(message: _error!, onRetry: _load));
 
     final listing = _listing!;

@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Notifications locales (nouveaux messages) — requis depuis Android 13 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="Allôwaw"
         android:name="${applicationName}"

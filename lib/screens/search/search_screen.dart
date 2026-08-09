@@ -7,6 +7,7 @@ import '../../core/theme.dart';
 import '../../models/listing.dart';
 import '../../services/listing_service.dart';
 import '../../widgets/listing_card.dart';
+import '../../widgets/skeleton.dart';
 import '../../widgets/state_views.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -108,11 +109,17 @@ class _SearchScreenState extends State<SearchScreen> {
           autofocus: widget.initialQuery == null,
           onChanged: _onChanged,
           onSubmitted: _runSearch,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+          cursorColor: Colors.white,
           decoration: const InputDecoration(
             hintText: 'Que cherchez-vous ?',
             hintStyle: TextStyle(color: Colors.white60),
             border: InputBorder.none,
+            // Le thème global remplit les champs en blanc (filled: true) —
+            // sans ce override, le texte blanc devient invisible sur fond
+            // blanc dans cette barre de recherche sur AppBar sombre.
+            filled: false,
+            contentPadding: EdgeInsets.zero,
           ),
         ),
         actions: [
@@ -122,7 +129,7 @@ class _SearchScreenState extends State<SearchScreen> {
       body: Stack(
         children: [
           if (_loading)
-            const LoadingView()
+            const SkeletonListingGrid()
           else if (_error != null)
             ErrorView(message: _error!, onRetry: () => _runSearch(_query))
           else if (_searched)
@@ -185,21 +192,47 @@ class _SuggestionsPanel extends StatelessWidget {
           if (listings.isNotEmpty) ...[
             const _SuggestionSectionLabel('ANNONCES'),
             ...listings.map((l) => ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: AppColors.primary50,
-                    backgroundImage: l.thumbnail != null ? NetworkImage(l.thumbnail!) : null,
-                    child: l.thumbnail == null ? const Icon(Icons.image, color: AppColors.inkMuted, size: 18) : null,
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      color: AppColors.primary50,
+                      child: l.thumbnail != null
+                          ? Image.network(l.thumbnail!, fit: BoxFit.cover)
+                          : const Icon(Icons.image_outlined, color: AppColors.inkMuted, size: 18),
+                    ),
                   ),
-                  title: Text(l.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                  subtitle: Text('${formatPrice(l.price, l.currency, priceType: l.priceType)} · ${l.categoryName}'),
+                  title: Text(
+                    l.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5, color: AppColors.ink),
+                  ),
+                  subtitle: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: formatPrice(l.price, l.currency, priceType: l.priceType),
+                          style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary, fontSize: 12.5),
+                        ),
+                        TextSpan(text: '  ·  ${l.categoryName}', style: const TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+                      ],
+                    ),
+                  ),
                   onTap: () => onSelectListing(l.slug),
                 )),
           ],
           if (categories.isNotEmpty) ...[
             const _SuggestionSectionLabel('CATÉGORIES'),
             ...categories.map((c) => ListTile(
-                  leading: Text(c['icon'] as String? ?? '📦', style: const TextStyle(fontSize: 18)),
-                  title: Text(c['name'] as String),
+                  leading: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(color: AppColors.primary50, borderRadius: BorderRadius.circular(10)),
+                    child: Center(child: Text(c['icon'] as String? ?? '📦', style: const TextStyle(fontSize: 19))),
+                  ),
+                  title: Text(c['name'] as String, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
                   onTap: () => onSelectCategory(c['slug'] as String),
                 )),
           ],
@@ -241,10 +274,21 @@ class _ResultsList extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
           child: Align(
             alignment: Alignment.centerLeft,
-            child: Text('${meta?.total ?? results.length} résultat(s)', style: const TextStyle(color: AppColors.inkMuted)),
+            child: Text.rich(
+              TextSpan(
+                style: const TextStyle(fontSize: 13, color: AppColors.inkMuted),
+                children: [
+                  TextSpan(
+                    text: '${meta?.total ?? results.length}',
+                    style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.ink, fontSize: 14),
+                  ),
+                  const TextSpan(text: ' résultat(s)'),
+                ],
+              ),
+            ),
           ),
         ),
         Expanded(

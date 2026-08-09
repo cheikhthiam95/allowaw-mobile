@@ -5,6 +5,7 @@ import '../../core/formatters.dart';
 import '../../core/theme.dart';
 import '../../models/listing.dart';
 import '../../services/listing_service.dart';
+import '../../widgets/skeleton.dart';
 import '../../widgets/state_views.dart';
 
 const _statusLabels = {
@@ -84,7 +85,7 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
         actions: [IconButton(icon: const Icon(Icons.add), onPressed: () => context.push('/listings/new'))],
       ),
       body: _loading
-          ? const LoadingView()
+          ? const SkeletonListTiles()
           : _error != null
               ? ErrorView(message: _error!, onRetry: _load)
               : _listings.isEmpty

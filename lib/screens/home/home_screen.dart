@@ -8,6 +8,7 @@ import '../../models/listing.dart';
 import '../../providers/categories_provider.dart';
 import '../../services/listing_service.dart';
 import '../../widgets/listing_card.dart';
+import '../../widgets/skeleton.dart';
 import '../../widgets/state_views.dart';
 
 /// Équivalent mobile de app/frontend/pages/Home.jsx — hero + recherche +
@@ -101,7 +102,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          if (_loading) const SliverFillRemaining(child: LoadingView())
+          if (_loading)
+            const SliverPadding(
+              padding: EdgeInsets.all(16),
+              sliver: SliverToBoxAdapter(child: SkeletonListingGrid(count: 4, padding: EdgeInsets.zero)),
+            )
           else if (_error != null)
             SliverFillRemaining(child: ErrorView(message: _error!, onRetry: _load))
           else ...[

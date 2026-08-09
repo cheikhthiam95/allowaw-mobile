@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/profile_service.dart';
+import '../../widgets/phone_verification_card.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -160,6 +161,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: _saving
                     ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : const Text('Enregistrer'),
+              ),
+              const SizedBox(height: 28),
+              PhoneVerificationCard(
+                verified: user.verified,
+                onVerified: (updated) => context.read<AuthProvider>().updateUser(updated),
               ),
             ],
           ),

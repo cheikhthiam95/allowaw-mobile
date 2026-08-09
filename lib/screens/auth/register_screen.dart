@@ -54,7 +54,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Créer un compte')),
+      appBar: AppBar(
+        title: const Text('Créer un compte'),
+        leading: IconButton(
+          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Continuer sans compte',
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(

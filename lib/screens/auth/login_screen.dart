@@ -51,7 +51,16 @@ class _LoginScreenState extends State<LoginScreen> {
             key: _formKey,
             child: ListView(
               children: [
-                const SizedBox(height: 40),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    onPressed: () => context.canPop() ? context.pop() : context.go('/'),
+                    icon: const Icon(Icons.close),
+                    tooltip: 'Continuer sans compte',
+                    style: IconButton.styleFrom(backgroundColor: AppColors.canvas),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 const Text('allôwaw', style: TextStyle(color: AppColors.primary, fontSize: 32, fontWeight: FontWeight.w900)),
                 const SizedBox(height: 8),
                 const Text('Connectez-vous à votre compte', style: TextStyle(color: AppColors.inkMuted)),

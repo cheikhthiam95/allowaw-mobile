@@ -5,6 +5,7 @@ import '../../core/theme.dart';
 import '../../models/listing.dart';
 import '../../services/listing_service.dart';
 import '../../widgets/listing_card.dart';
+import '../../widgets/skeleton.dart';
 import '../../widgets/state_views.dart';
 
 /// Équivalent de Listings/Index.jsx — toutes les annonces, paginées.
@@ -86,7 +87,7 @@ class _ListingsIndexScreenState extends State<ListingsIndexScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Toutes les annonces')),
       body: _loading
-          ? const LoadingView()
+          ? const SkeletonListingGrid()
           : _error != null
               ? ErrorView(message: _error!, onRetry: _load)
               : _listings.isEmpty

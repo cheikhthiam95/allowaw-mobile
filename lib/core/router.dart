@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
 import '../screens/account/account_dashboard_screen.dart';
@@ -82,16 +80,3 @@ const _authRequiredPaths = [
   '/messages',
   '/listings/new',
 ];
-
-/// Aide pour construire le routeur avec le AuthProvider déjà présent dans
-/// l'arbre de widgets (voir main.dart).
-class RouterProvider extends StatelessWidget {
-  final Widget Function(GoRouter router) builder;
-  const RouterProvider({super.key, required this.builder});
-
-  @override
-  Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
-    return builder(buildRouter(auth));
-  }
-}

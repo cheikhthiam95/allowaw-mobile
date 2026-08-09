@@ -6,6 +6,7 @@ import '../../models/category.dart';
 import '../../models/listing.dart';
 import '../../services/category_service.dart';
 import '../../widgets/listing_card.dart';
+import '../../widgets/skeleton.dart';
 import '../../widgets/state_views.dart';
 
 /// Équivalent de Categories/Show.jsx — en-tête catégorie, chips de
@@ -57,7 +58,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(_category?.name ?? 'Catégorie')),
       body: _loading
-          ? const LoadingView()
+          ? const SkeletonListingGrid()
           : _error != null
               ? ErrorView(message: _error!, onRetry: () => _load())
               : RefreshIndicator(

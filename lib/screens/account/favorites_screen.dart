@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../../providers/favorites_provider.dart';
 import '../../widgets/listing_card.dart';
+import '../../widgets/skeleton.dart';
 import '../../widgets/state_views.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -45,7 +46,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Mes favoris')),
       body: _loading
-          ? const LoadingView()
+          ? const SkeletonListingGrid()
           : _error != null
               ? ErrorView(message: _error!, onRetry: _load)
               : favorites.items.isEmpty

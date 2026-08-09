@@ -7,6 +7,7 @@ import '../../core/theme.dart';
 import '../../models/conversation.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/conversation_service.dart';
+import '../../widgets/skeleton.dart';
 import '../../widgets/state_views.dart';
 
 class ConversationsScreen extends StatefulWidget {
@@ -58,7 +59,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Messages')),
       body: _loading
-          ? const LoadingView()
+          ? const SkeletonListTiles()
           : _error != null
               ? ErrorView(message: _error!, onRetry: _load)
               : _conversations.isEmpty

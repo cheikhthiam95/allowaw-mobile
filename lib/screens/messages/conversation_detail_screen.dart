@@ -6,7 +6,9 @@ import '../../core/formatters.dart';
 import '../../core/theme.dart';
 import '../../models/conversation.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/messages_provider.dart';
 import '../../services/conversation_service.dart';
+import '../../widgets/skeleton.dart';
 import '../../widgets/state_views.dart';
 
 class ConversationDetailScreen extends StatefulWidget {
@@ -31,11 +33,19 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // Pas de notification locale pour cette conversation tant qu'elle est
+    // ouverte à l'écran — pas besoin de se notifier soi-même.
+    context.read<MessagesProvider>().setActiveConversation(widget.conversationId);
     _load();
   }
 
   @override
   void dispose() {
+    context.read<MessagesProvider>().setActiveConversation(null);
+    // Les messages viennent d'être marqués lus côté serveur (voir #show
+    // dans l'API) — on rafraîchit tout de suite le badge plutôt que
+    // d'attendre jusqu'à 25s le prochain poll.
+    context.read<MessagesProvider>().refreshNow();
     _bodyController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -87,7 +97,7 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Scaffold(body: LoadingView());
+    if (_loading) return const Scaffold(body: _ChatSkeleton());
     if (_error != null) return Scaffold(appBar: AppBar(), body: ErrorView(message: _error!, onRetry: _load));
 
     final conv = _conversation!;
@@ -180,6 +190,33 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Skeleton d'une conversation en cours de chargement — quelques bulles
+/// alternées gauche/droite pour ne pas afficher un écran vide brutal.
+class _ChatSkeleton extends StatelessWidget {
+  const _ChatSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Align(alignment: Alignment.centerLeft, child: SkeletonBox(width: 180, height: 40, borderRadius: BorderRadius.circular(14))),
+            const SizedBox(height: 10),
+            Align(alignment: Alignment.centerRight, child: SkeletonBox(width: 140, height: 34, borderRadius: BorderRadius.circular(14))),
+            const SizedBox(height: 10),
+            Align(alignment: Alignment.centerLeft, child: SkeletonBox(width: 210, height: 50, borderRadius: BorderRadius.circular(14))),
+            const SizedBox(height: 10),
+            Align(alignment: Alignment.centerRight, child: SkeletonBox(width: 100, height: 34, borderRadius: BorderRadius.circular(14))),
+          ],
+        ),
       ),
     );
   }

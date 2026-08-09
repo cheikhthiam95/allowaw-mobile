@@ -51,6 +51,10 @@ class AccountDashboardScreen extends StatelessWidget {
               ],
             ),
           ),
+          if (!user.verified) ...[
+            const SizedBox(height: 12),
+            _UnverifiedBanner(onTap: () => context.push('/account/profile')),
+          ],
           const SizedBox(height: 20),
           _MenuTile(icon: Icons.list_alt, label: 'Mes annonces', onTap: () => context.push('/account/listings')),
           _MenuTile(icon: Icons.favorite_border, label: 'Mes favoris', onTap: () => context.push('/account/favorites')),
@@ -71,6 +75,51 @@ class AccountDashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 90),
         ],
+      ),
+    );
+  }
+}
+
+/// Signal discret mais visible que le compte n'est pas encore vérifié —
+/// ton informatif (pas une erreur), amène vers la carte de vérification
+/// complète sur l'écran Profil.
+class _UnverifiedBanner extends StatelessWidget {
+  final VoidCallback onTap;
+  const _UnverifiedBanner({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.gold50,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.gold.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: const BoxDecoration(color: AppColors.gold, shape: BoxShape.circle),
+              child: const Icon(Icons.priority_high, color: Colors.white, size: 14),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Compte non vérifié', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5, color: AppColors.ink)),
+                  SizedBox(height: 1),
+                  Text('Vérifiez votre numéro pour inspirer confiance', style: TextStyle(fontSize: 11.5, color: AppColors.inkMuted)),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: AppColors.goldDark, size: 20),
+          ],
+        ),
       ),
     );
   }
